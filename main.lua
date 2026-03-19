@@ -3,6 +3,7 @@ local RunService = game:GetService("RunService")
 local CollectionService = game:GetService("CollectionService")
 local UserInputService = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
+local TouchEnabled = UserInputService.TouchEnabled
 
 local player = Players.LocalPlayer
 if not player.Character then player.CharacterAdded:Wait() end
@@ -11,11 +12,11 @@ local running = false
 local tweenSpeed = 100
 local moverConn = nil
 local minimized = false
-local normalSize = UDim2.new(0, 300, 0, 260)
-local minimizedSize = UDim2.new(0, 300, 0, 38)
+local normalSize = UDim2.new(0, 320, 0, 280)
+local minimizedSize = UDim2.new(0, 320, 0, 38)
 
 -- Store references to UI elements that need updating
-local statusLbl, countLbl, speedLbl, sliderTrack, sliderFill, sliderKnob, speedValueLbl
+local statusLbl, countLbl, speedLbl, sliderTrack, sliderFill, sliderKnob, speedValueLbl, speedInput
 -- Declare button variables globally
 local startBtn, stopBtn
 
@@ -28,7 +29,7 @@ local function showInstagramNotification()
     
     -- Main notification frame with improved design
     local notificationFrame = Instance.new("Frame")
-    notificationFrame.Size = UDim2.new(0, 340, 0, 110)
+    notificationFrame.Size = TouchEnabled and UDim2.new(0, 360, 0, 120) or UDim2.new(0, 340, 0, 110)
     notificationFrame.Position = UDim2.new(1, 20, 0, 20)
     notificationFrame.BackgroundColor3 = Color3.fromRGB(18, 18, 28)
     notificationFrame.BorderSizePixel = 0
@@ -56,28 +57,16 @@ local function showInstagramNotification()
     stroke.Transparency = 0.2
     stroke.Parent = notificationFrame
     
-    -- Inner glow effect
-    local innerGlow = Instance.new("ImageLabel")
-    innerGlow.Size = UDim2.new(1, 0, 0, 30)
-    innerGlow.Position = UDim2.new(0, 0, 0, 0)
-    innerGlow.BackgroundTransparency = 1
-    innerGlow.Image = "rbxassetid://3570695787"
-    innerGlow.ImageColor3 = Color3.fromRGB(255, 50, 100)
-    innerGlow.ImageTransparency = 0.85
-    innerGlow.ScaleType = Enum.ScaleType.Slice
-    innerGlow.SliceCenter = Rect.new(100, 100, 100, 100)
-    innerGlow.Parent = notificationFrame
-    
-    -- Instagram logo/icon (replacing profile pic)
+    -- Instagram logo/icon
     local logoIcon = Instance.new("TextLabel")
-    logoIcon.Size = UDim2.new(0, 50, 0, 50)
-    logoIcon.Position = UDim2.new(0, 15, 0.5, -25)
+    logoIcon.Size = TouchEnabled and UDim2.new(0, 60, 0, 60) or UDim2.new(0, 50, 0, 50)
+    logoIcon.Position = TouchEnabled and UDim2.new(0, 15, 0.5, -30) or UDim2.new(0, 15, 0.5, -25)
     logoIcon.BackgroundColor3 = Color3.fromRGB(255, 50, 100)
     logoIcon.BackgroundTransparency = 0.2
     logoIcon.Text = "📷"
     logoIcon.TextColor3 = Color3.fromRGB(255, 255, 255)
     logoIcon.Font = Enum.Font.GothamBold
-    logoIcon.TextSize = 28
+    logoIcon.TextSize = TouchEnabled and 32 or 28
     logoIcon.Parent = notificationFrame
     
     local logoCorner = Instance.new("UICorner")
@@ -86,55 +75,55 @@ local function showInstagramNotification()
     
     -- Text container
     local textContainer = Instance.new("Frame")
-    textContainer.Size = UDim2.new(1, -85, 1, 0)
-    textContainer.Position = UDim2.new(0, 75, 0, 0)
+    textContainer.Size = TouchEnabled and UDim2.new(1, -90, 1, -5) or UDim2.new(1, -85, 1, 0)
+    textContainer.Position = TouchEnabled and UDim2.new(0, 85, 0, 5) or UDim2.new(0, 75, 0, 0)
     textContainer.BackgroundTransparency = 1
     textContainer.Parent = notificationFrame
     
-    -- Title with gradient text effect
+    -- Title
     local titleLabel = Instance.new("TextLabel")
     titleLabel.Size = UDim2.new(1, 0, 0, 28)
-    titleLabel.Position = UDim2.new(0, 0, 0, 15)
+    titleLabel.Position = TouchEnabled and UDim2.new(0, 0, 0, 10) or UDim2.new(0, 0, 0, 15)
     titleLabel.BackgroundTransparency = 1
     titleLabel.Text = "Follow me on Instagram"
     titleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
     titleLabel.Font = Enum.Font.GothamBold
-    titleLabel.TextSize = 16
+    titleLabel.TextSize = TouchEnabled and 17 or 16
     titleLabel.TextXAlignment = Enum.TextXAlignment.Left
     titleLabel.Parent = textContainer
     
-    -- Username with @ symbol
+    -- Username
     local descLabel = Instance.new("TextLabel")
     descLabel.Size = UDim2.new(1, 0, 0, 20)
-    descLabel.Position = UDim2.new(0, 0, 0, 43)
+    descLabel.Position = TouchEnabled and UDim2.new(0, 0, 0, 38) or UDim2.new(0, 0, 0, 43)
     descLabel.BackgroundTransparency = 1
     descLabel.Text = "@gravedf"
     descLabel.TextColor3 = Color3.fromRGB(255, 150, 200)
     descLabel.Font = Enum.Font.Gotham
-    descLabel.TextSize = 15
+    descLabel.TextSize = TouchEnabled and 16 or 15
     descLabel.TextXAlignment = Enum.TextXAlignment.Left
     descLabel.Parent = textContainer
     
     -- Small description
     local smallDesc = Instance.new("TextLabel")
     smallDesc.Size = UDim2.new(1, 0, 0, 16)
-    smallDesc.Position = UDim2.new(0, 0, 0, 63)
+    smallDesc.Position = TouchEnabled and UDim2.new(0, 0, 0, 58) or UDim2.new(0, 0, 0, 63)
     smallDesc.BackgroundTransparency = 1
     smallDesc.Text = "Get updates and more!"
     smallDesc.TextColor3 = Color3.fromRGB(160, 160, 200)
     smallDesc.Font = Enum.Font.Gotham
-    smallDesc.TextSize = 11
+    smallDesc.TextSize = TouchEnabled and 12 or 11
     smallDesc.TextXAlignment = Enum.TextXAlignment.Left
     smallDesc.Parent = textContainer
     
     -- Button frame
     local buttonFrame = Instance.new("Frame")
     buttonFrame.Size = UDim2.new(1, 0, 0, 36)
-    buttonFrame.Position = UDim2.new(0, 0, 1, -46)
+    buttonFrame.Position = TouchEnabled and UDim2.new(0, 0, 1, -41) or UDim2.new(0, 0, 1, -46)
     buttonFrame.BackgroundTransparency = 1
     buttonFrame.Parent = textContainer
     
-    -- Follow button with improved design
+    -- Follow button
     local followButton = Instance.new("TextButton")
     followButton.Size = UDim2.new(0.65, -4, 1, 0)
     followButton.Position = UDim2.new(0, 0, 0, 0)
@@ -142,14 +131,13 @@ local function showInstagramNotification()
     followButton.Text = "Follow"
     followButton.TextColor3 = Color3.fromRGB(255, 255, 255)
     followButton.Font = Enum.Font.GothamBold
-    followButton.TextSize = 14
+    followButton.TextSize = TouchEnabled and 15 or 14
     followButton.BorderSizePixel = 0
     followButton.Parent = buttonFrame
     
     local followCorner = Instance.new("UICorner")
     followCorner.CornerRadius = UDim.new(0, 8)
     followCorner.Parent = followButton
-    
     
     -- Later button
     local closeButton = Instance.new("TextButton")
@@ -159,7 +147,7 @@ local function showInstagramNotification()
     closeButton.Text = "Later"
     closeButton.TextColor3 = Color3.fromRGB(220, 220, 240)
     closeButton.Font = Enum.Font.Gotham
-    closeButton.TextSize = 13
+    closeButton.TextSize = TouchEnabled and 14 or 13
     closeButton.BorderSizePixel = 0
     closeButton.Parent = buttonFrame
     
@@ -170,7 +158,7 @@ local function showInstagramNotification()
     -- Slide in animation
     notificationFrame.Position = UDim2.new(1, 20, 0, 20)
     local slideIn = TweenService:Create(notificationFrame, TweenInfo.new(0.5, Enum.EasingStyle.Exponential, Enum.EasingDirection.Out), {
-        Position = UDim2.new(1, -360, 0, 20)
+        Position = TouchEnabled and UDim2.new(1, -380, 0, 20) or UDim2.new(1, -360, 0, 20)
     })
     slideIn:Play()
     
@@ -203,9 +191,6 @@ local function showInstagramNotification()
         setclipboard("https://www.instagram.com/gravedf/")
         followButton.BackgroundColor3 = Color3.fromRGB(50, 200, 90)
         followButton.Text = "Copied! ✓"
-        
-        -- Update glow color
-        followGlow.ImageColor3 = Color3.fromRGB(50, 200, 90)
         
         task.wait(0.8)
         
@@ -242,7 +227,6 @@ local function showInstagramNotification()
     end
 end
 
--- Rest of your code remains exactly the same from here...
 local function getHRP()
     local char = player.Character
     if not char then return nil end
@@ -300,10 +284,10 @@ gui.ResetOnSpawn = false
 gui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 gui.Parent = player:WaitForChild("PlayerGui")
 
--- Main panel with glassmorphism effect
+-- Main panel
 local panel = Instance.new("Frame")
 panel.Size = normalSize
-panel.Position = UDim2.new(0.5, -150, 0.5, -130)
+panel.Position = UDim2.new(0.5, -160, 0.5, -140)
 panel.BackgroundColor3 = Color3.fromRGB(15, 15, 25)
 panel.BorderSizePixel = 0
 panel.Active = true
@@ -314,7 +298,7 @@ local panelCorner = Instance.new("UICorner")
 panelCorner.CornerRadius = UDim.new(0, 12)
 panelCorner.Parent = panel
 
--- Subtle gradient overlay
+-- Gradient overlay
 local gradient = Instance.new("UIGradient")
 gradient.Color = ColorSequence.new({
     ColorSequenceKeypoint.new(0, Color3.fromRGB(25, 25, 40)),
@@ -352,8 +336,8 @@ titleText.TextXAlignment = Enum.TextXAlignment.Left
 titleText.Parent = titleBar
 
 local minimizeBtn = Instance.new("TextButton")
-minimizeBtn.Size = UDim2.new(0, 26, 0, 26)
-minimizeBtn.Position = UDim2.new(1, -62, 0.5, -13)
+minimizeBtn.Size = UDim2.new(0, 30, 0, 30)
+minimizeBtn.Position = UDim2.new(1, -66, 0.5, -15)
 minimizeBtn.BackgroundColor3 = Color3.fromRGB(60, 60, 90)
 minimizeBtn.Text = "−"
 minimizeBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
@@ -363,12 +347,12 @@ minimizeBtn.BorderSizePixel = 0
 minimizeBtn.Parent = titleBar
 
 local minimizeCorner = Instance.new("UICorner")
-minimizeCorner.CornerRadius = UDim.new(0, 6)
+minimizeCorner.CornerRadius = UDim.new(0, 8)
 minimizeCorner.Parent = minimizeBtn
 
 local closeBtn = Instance.new("TextButton")
-closeBtn.Size = UDim2.new(0, 26, 0, 26)
-closeBtn.Position = UDim2.new(1, -32, 0.5, -13)
+closeBtn.Size = UDim2.new(0, 30, 0, 30)
+closeBtn.Position = UDim2.new(1, -34, 0.5, -15)
 closeBtn.BackgroundColor3 = Color3.fromRGB(200, 60, 70)
 closeBtn.Text = "X"
 closeBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
@@ -378,7 +362,7 @@ closeBtn.BorderSizePixel = 0
 closeBtn.Parent = titleBar
 
 local closeCorner = Instance.new("UICorner")
-closeCorner.CornerRadius = UDim.new(0, 6)
+closeCorner.CornerRadius = UDim.new(0, 8)
 closeCorner.Parent = closeBtn
 
 local content = Instance.new("Frame")
@@ -387,7 +371,7 @@ content.Position = UDim2.new(0, 12, 0, 44)
 content.BackgroundTransparency = 1
 content.Parent = panel
 
--- Status section with icons (using text as simple icons)
+-- Status section
 local statusIcon = Instance.new("TextLabel")
 statusIcon.Size = UDim2.new(0, 20, 0, 20)
 statusIcon.Position = UDim2.new(0, 0, 0, 2)
@@ -410,7 +394,7 @@ statusLbl.TextSize = 13
 statusLbl.TextXAlignment = Enum.TextXAlignment.Left
 statusLbl.Parent = content
 
--- Food count with icon
+-- Food count
 local foodIcon = Instance.new("TextLabel")
 foodIcon.Size = UDim2.new(0, 20, 0, 18)
 foodIcon.Position = UDim2.new(0, 0, 0, 24)
@@ -433,9 +417,9 @@ countLbl.TextSize = 12
 countLbl.TextXAlignment = Enum.TextXAlignment.Left
 countLbl.Parent = content
 
--- Speed display with modern styling
+-- Speed container with input box
 local speedContainer = Instance.new("Frame")
-speedContainer.Size = UDim2.new(1, 0, 0, 30)
+speedContainer.Size = UDim2.new(1, 0, 0, 40)
 speedContainer.Position = UDim2.new(0, 0, 0, 48)
 speedContainer.BackgroundColor3 = Color3.fromRGB(25, 25, 40)
 speedContainer.BackgroundTransparency = 0.3
@@ -456,7 +440,7 @@ speedIcon.TextSize = 16
 speedIcon.Parent = speedContainer
 
 speedLbl = Instance.new("TextLabel")
-speedLbl.Size = UDim2.new(0.5, -20, 1, 0)
+speedLbl.Size = UDim2.new(0.3, -20, 1, 0)
 speedLbl.Position = UDim2.new(0, 32, 0, 0)
 speedLbl.BackgroundTransparency = 1
 speedLbl.Text = "Speed"
@@ -466,11 +450,30 @@ speedLbl.TextSize = 13
 speedLbl.TextXAlignment = Enum.TextXAlignment.Left
 speedLbl.Parent = speedContainer
 
+-- Speed input text box (new)
+speedInput = Instance.new("TextBox")
+speedInput.Size = UDim2.new(0, 60, 0, 24)
+speedInput.Position = UDim2.new(0.35, 0, 0.5, -12)
+speedInput.BackgroundColor3 = Color3.fromRGB(35, 35, 55)
+speedInput.Text = "100"
+speedInput.TextColor3 = Color3.fromRGB(255, 255, 255)
+speedInput.Font = Enum.Font.GothamBold
+speedInput.TextSize = 14
+speedInput.PlaceholderText = "10-1000"
+speedInput.ClearTextOnFocus = false
+speedInput.BorderSizePixel = 0
+speedInput.Parent = speedContainer
+
+local inputCorner = Instance.new("UICorner")
+inputCorner.CornerRadius = UDim.new(0, 6)
+inputCorner.Parent = speedInput
+
+-- Speed value label
 speedValueLbl = Instance.new("TextLabel")
-speedValueLbl.Size = UDim2.new(0.5, -10, 1, 0)
-speedValueLbl.Position = UDim2.new(0.5, 10, 0, 0)
+speedValueLbl.Size = UDim2.new(0.3, -10, 1, 0)
+speedValueLbl.Position = UDim2.new(0.7, 5, 0, 0)
 speedValueLbl.BackgroundTransparency = 1
-speedValueLbl.Text = "100 studs/s"
+speedValueLbl.Text = "100 s/s"
 speedValueLbl.TextColor3 = Color3.fromRGB(100, 200, 255)
 speedValueLbl.Font = Enum.Font.GothamBold
 speedValueLbl.TextSize = 13
@@ -480,14 +483,14 @@ speedValueLbl.Parent = speedContainer
 -- Modern slider design
 local sliderContainer = Instance.new("Frame")
 sliderContainer.Size = UDim2.new(1, 0, 0, 40)
-sliderContainer.Position = UDim2.new(0, 0, 0, 84)
+sliderContainer.Position = UDim2.new(0, 0, 0, 92)
 sliderContainer.BackgroundTransparency = 1
 sliderContainer.Parent = content
 
--- Slider track with glow effect
+-- Slider track
 sliderTrack = Instance.new("Frame")
-sliderTrack.Size = UDim2.new(1, 0, 0, 6)
-sliderTrack.Position = UDim2.new(0, 0, 0.5, -3)
+sliderTrack.Size = UDim2.new(1, 0, 0, 8)
+sliderTrack.Position = UDim2.new(0, 0, 0.5, -4)
 sliderTrack.BackgroundColor3 = Color3.fromRGB(30, 30, 50)
 sliderTrack.BorderSizePixel = 0
 sliderTrack.Parent = sliderContainer
@@ -496,19 +499,7 @@ local trackCorner = Instance.new("UICorner")
 trackCorner.CornerRadius = UDim.new(1, 0)
 trackCorner.Parent = sliderTrack
 
--- Glow effect for track
-local trackGlow = Instance.new("ImageLabel")
-trackGlow.Size = UDim2.new(1, 0, 1, 4)
-trackGlow.Position = UDim2.new(0, 0, 0.5, -2)
-trackGlow.BackgroundTransparency = 1
-trackGlow.Image = "rbxassetid://3570695787"
-trackGlow.ImageColor3 = Color3.fromRGB(90, 160, 255)
-trackGlow.ImageTransparency = 0.8
-trackGlow.ScaleType = Enum.ScaleType.Slice
-trackGlow.SliceCenter = Rect.new(100, 100, 100, 100)
-trackGlow.Parent = sliderTrack
-
--- Slider fill with gradient
+-- Slider fill
 sliderFill = Instance.new("Frame")
 sliderFill.Size = UDim2.new(0, 0, 1, 0)
 sliderFill.BackgroundColor3 = Color3.fromRGB(90, 160, 255)
@@ -527,10 +518,10 @@ fillGradient.Color = ColorSequence.new({
 fillGradient.Rotation = 90
 fillGradient.Parent = sliderFill
 
--- Modern knob with ring design
+-- Slider knob (touch-friendly size)
 sliderKnob = Instance.new("TextButton")
-sliderKnob.Size = UDim2.new(0, 24, 0, 24)
-sliderKnob.Position = UDim2.new(0, -12, 0.5, -12)
+sliderKnob.Size = TouchEnabled and UDim2.new(0, 30, 0, 30) or UDim2.new(0, 24, 0, 24)
+sliderKnob.Position = UDim2.new(0, -15, 0.5, -15)
 sliderKnob.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
 sliderKnob.Text = ""
 sliderKnob.BorderSizePixel = 0
@@ -542,8 +533,8 @@ knobCorner.Parent = sliderKnob
 
 -- Inner ring
 local knobRing = Instance.new("Frame")
-knobRing.Size = UDim2.new(0, 18, 0, 18)
-knobRing.Position = UDim2.new(0.5, -9, 0.5, -9)
+knobRing.Size = TouchEnabled and UDim2.new(0, 22, 0, 22) or UDim2.new(0, 18, 0, 18)
+knobRing.Position = UDim2.new(0.5, -11, 0.5, -11)
 knobRing.BackgroundColor3 = Color3.fromRGB(90, 160, 255)
 knobRing.BorderSizePixel = 0
 knobRing.Parent = sliderKnob
@@ -552,24 +543,12 @@ local ringCorner = Instance.new("UICorner")
 ringCorner.CornerRadius = UDim.new(1, 0)
 ringCorner.Parent = knobRing
 
--- Outer glow
-local knobGlow = Instance.new("ImageLabel")
-knobGlow.Size = UDim2.new(1, 4, 1, 4)
-knobGlow.Position = UDim2.new(0.5, -14, 0.5, -14)
-knobGlow.BackgroundTransparency = 1
-knobGlow.Image = "rbxassetid://3570695787"
-knobGlow.ImageColor3 = Color3.fromRGB(90, 160, 255)
-knobGlow.ImageTransparency = 0.4
-knobGlow.ScaleType = Enum.ScaleType.Slice
-knobGlow.SliceCenter = Rect.new(100, 100, 100, 100)
-knobGlow.Parent = sliderKnob
-
--- Hint text with better styling
+-- Hint text
 local hintLbl = Instance.new("TextLabel")
 hintLbl.Size = UDim2.new(1, 0, 0, 16)
-hintLbl.Position = UDim2.new(0, 0, 0, 125)
+hintLbl.Position = UDim2.new(0, 0, 0, 135)
 hintLbl.BackgroundTransparency = 1
-hintLbl.Text = "⬅️ Drag to adjust speed  ➡️"
+hintLbl.Text = TouchEnabled and "👆 Drag knob to adjust speed" or "⬅️ Drag to adjust speed  ➡️"
 hintLbl.TextColor3 = Color3.fromRGB(120, 120, 180)
 hintLbl.Font = Enum.Font.Gotham
 hintLbl.TextSize = 11
@@ -577,8 +556,8 @@ hintLbl.TextXAlignment = Enum.TextXAlignment.Center
 hintLbl.Parent = content
 
 local buttonContainer = Instance.new("Frame")
-buttonContainer.Size = UDim2.new(1, 0, 0, 40)
-buttonContainer.Position = UDim2.new(0, 0, 0, 145)
+buttonContainer.Size = UDim2.new(1, 0, 0, 45)
+buttonContainer.Position = UDim2.new(0, 0, 0, 155)
 buttonContainer.BackgroundTransparency = 1
 buttonContainer.Parent = content
 
@@ -590,7 +569,7 @@ local function makeBtn(text, color, xOffset)
     btn.Text = text
     btn.TextColor3 = Color3.fromRGB(255, 255, 255)
     btn.Font = Enum.Font.GothamBold
-    btn.TextSize = 14
+    btn.TextSize = TouchEnabled and 15 or 14
     btn.BorderSizePixel = 0
     btn.Parent = buttonContainer
     
@@ -601,55 +580,91 @@ local function makeBtn(text, color, xOffset)
     return btn
 end
 
--- Assign the buttons to the global variables
 startBtn = makeBtn("Start", Color3.fromRGB(40, 180, 90), 0)
 stopBtn = makeBtn("Stop", Color3.fromRGB(200, 60, 70), 0.52)
 
--- Function to update slider position based on speed
-local function updateSliderPosition()
-    local ratio = tweenSpeed / 1000
+-- Function to update slider and input from speed value
+local function updateSpeedDisplay()
+    local ratio = math.clamp(tweenSpeed / 1000, 0, 1)
     sliderFill.Size = UDim2.new(ratio, 0, 1, 0)
-    sliderKnob.Position = UDim2.new(ratio, -12, 0.5, -12)
-    speedValueLbl.Text = tweenSpeed .. " studs/s"
+    sliderKnob.Position = UDim2.new(ratio, -sliderKnob.AbsoluteSize.X/2, 0.5, -sliderKnob.AbsoluteSize.Y/2)
+    speedValueLbl.Text = tweenSpeed .. " s/s"
+    speedInput.Text = tostring(tweenSpeed)
 end
 
--- Initialize slider position
-updateSliderPosition()
+-- Function to set speed from input
+local function setSpeedFromInput()
+    local newSpeed = tonumber(speedInput.Text)
+    if newSpeed then
+        tweenSpeed = math.clamp(newSpeed, 10, 1000)
+    else
+        tweenSpeed = 100
+    end
+    updateSpeedDisplay()
+end
 
-local dragging = false
+-- Initialize display
+updateSpeedDisplay()
 
--- Slider dragging
-sliderKnob.MouseButton1Down:Connect(function()
-    dragging = true
-end)
-
-UserInputService.InputEnded:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseButton1 then
-        dragging = false
+-- Input box events
+speedInput.FocusLost:Connect(function(enterPressed)
+    if enterPressed then
+        setSpeedFromInput()
     end
 end)
 
-UserInputService.InputChanged:Connect(function(input)
+-- Slider dragging (supports both mouse and touch)
+local dragging = false
+local touchId = nil
+
+local function startDrag(input)
+    dragging = true
+    if input.UserInputType == Enum.UserInputType.Touch then
+        touchId = input.KeyCode
+    end
+end
+
+local function updateDrag(input)
     if not dragging then return end
-    if input.UserInputType ~= Enum.UserInputType.MouseMovement then return end
     
-    local mousePos = UserInputService:GetMouseLocation()
+    local inputPos = input.Position
     local trackPos = sliderTrack.AbsolutePosition
     local trackSize = sliderTrack.AbsoluteSize
     
     if trackSize.X <= 0 then return end
     
-    local relativeX = mousePos.X - trackPos.X
+    local relativeX = inputPos.X - trackPos.X
     local ratio = math.clamp(relativeX / trackSize.X, 0, 1)
     
-    tweenSpeed = math.max(10, math.floor(ratio * 1000))
-    
-    -- Smooth visual updates
-    sliderFill.Size = UDim2.new(ratio, 0, 1, 0)
-    sliderKnob.Position = UDim2.new(ratio, -12, 0.5, -12)
-    speedValueLbl.Text = tweenSpeed .. " studs/s"
-    speedLbl.TextColor3 = Color3.fromRGB(255, 255, 255)
+    tweenSpeed = math.floor(10 + (ratio * 990))
+    updateSpeedDisplay()
+end
+
+local function endDrag(input)
+    if TouchEnabled and input.UserInputType == Enum.UserInputType.Touch then
+        if touchId and input.KeyCode == touchId then
+            dragging = false
+            touchId = nil
+        end
+    elseif input.UserInputType == Enum.UserInputType.MouseButton1 then
+        dragging = false
+    end
+end
+
+-- Connect touch/mouse events
+sliderKnob.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        startDrag(input)
+    end
 end)
+
+UserInputService.InputChanged:Connect(function(input)
+    if (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) and dragging then
+        updateDrag(input)
+    end
+end)
+
+UserInputService.InputEnded:Connect(endDrag)
 
 -- Minimize functionality
 minimizeBtn.MouseButton1Click:Connect(function()
@@ -658,7 +673,7 @@ minimizeBtn.MouseButton1Click:Connect(function()
     if minimized then
         local sizeTween = TweenService:Create(panel, TweenInfo.new(0.3, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), {
             Size = minimizedSize,
-            Position = UDim2.new(0.5, -150, 0.5, -19)
+            Position = UDim2.new(0.5, -160, 0.5, -19)
         })
         sizeTween:Play()
         
@@ -667,7 +682,7 @@ minimizeBtn.MouseButton1Click:Connect(function()
     else
         local sizeTween = TweenService:Create(panel, TweenInfo.new(0.3, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), {
             Size = normalSize,
-            Position = UDim2.new(0.5, -150, 0.5, -130)
+            Position = UDim2.new(0.5, -160, 0.5, -140)
         })
         sizeTween:Play()
         
@@ -679,7 +694,6 @@ end)
 local function setStatus(msg, color)
     statusLbl.Text = "Status: " .. msg
     statusLbl.TextColor3 = color or Color3.fromRGB(180, 180, 220)
-    -- Update status icon color
     statusIcon.TextColor3 = color or Color3.fromRGB(255, 200, 60)
 end
 
@@ -714,7 +728,6 @@ local function collectLoop()
     setStatus("Stopped")
 end
 
--- Now these will work because startBtn and stopBtn are global
 startBtn.MouseButton1Click:Connect(function()
     if running then return end
     running = true
